@@ -4,6 +4,7 @@ metadata:
   name: hello-webhook-deployment
   labels:
     app: hello-webhook
+  namespace: "default"
 spec:
   replicas: 1
   selector:

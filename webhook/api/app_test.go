@@ -22,6 +22,10 @@ func TestAppTestSuite(t *testing.T) {
 	suite.Run(t, new(AppTestSuite))
 }
 
+//func TestBuildImage(t *testing.T)  {
+//	api.Run("devops","test-v11111")
+//}
+
 func (suite *AppTestSuite) Test_HandleMutate_Ok() {
 	app := &api.App{}
 

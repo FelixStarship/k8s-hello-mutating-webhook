@@ -6,13 +6,15 @@ RUN mkdir -p /app
 WORKDIR /app
 
 # install dependencies
+ENV GOPROXY=https://goproxy.cn
 ADD go.mod go.mod
 ADD go.sum go.sum
 RUN go mod download
 # add code
 ADD . .
 # build the source
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main main.go
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main main.go && chmod +x /app/kubectl
+
 
 # Final Image
 FROM alpine:3.12
@@ -22,5 +24,6 @@ RUN apk update && apk --no-cache  add ca-certificates
 WORKDIR /app
 # copy the binary from builder
 COPY --from=builder /app/main ./main
+COPY --from=builder /app/kubectl /usr/local/bin
 # run the binary
 CMD ["./main"]

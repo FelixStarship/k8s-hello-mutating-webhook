@@ -1,4 +1,0 @@
-resources:
-- configmap.yaml
-- service.yaml
-- webhookconf.yaml

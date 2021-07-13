@@ -3,11 +3,13 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"net/http"
-
 	admissionv1 "k8s.io/api/admission/v1"
+	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"net/http"
+	"os/exec"
+	"strings"
 )
 
 type App struct {
@@ -24,39 +26,35 @@ func (app *App) HandleMutate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// unmarshal the pod from the AdmissionRequest
-	pod := &corev1.Pod{}
-	if err := json.Unmarshal(admissionReview.Request.Object.Raw, pod); err != nil {
+	deploy := &appsv1.Deployment{}
+	if err := json.Unmarshal(admissionReview.Request.Object.Raw, deploy); err != nil {
 		app.HandleError(w, r, fmt.Errorf("unmarshal to pod: %v", err))
 		return
 	}
 
-	// add the volume to the pod
-	pod.Spec.Volumes = append(pod.Spec.Volumes, corev1.Volume{
-		Name: "hello-volume",
-		VolumeSource: corev1.VolumeSource{
-			ConfigMap: &corev1.ConfigMapVolumeSource{
-				LocalObjectReference: corev1.LocalObjectReference{
-					Name: "hello-configmap",
-				},
-			},
-		},
-	})
+	err = Run(deploy.Namespace, deploy.Name)
 
-	// add volume mount to all containers in the pod
-	for i := 0; i < len(pod.Spec.Containers); i++ {
-		pod.Spec.Containers[i].VolumeMounts = append(pod.Spec.Containers[i].VolumeMounts, corev1.VolumeMount{
-			Name:      "hello-volume",
-			MountPath: "/etc/config",
-		})
+	if err != nil {
+		app.HandleError(w, r, err)
+		return
 	}
 
-	containersBytes, err := json.Marshal(&pod.Spec.Containers)
+	// add the imagePullSecrets to the pod
+	deploy.Spec.Template.Spec.ImagePullSecrets = append(deploy.Spec.Template.Spec.ImagePullSecrets, corev1.LocalObjectReference{
+		Name: deploy.Name,
+	})
+
+	for i := 0; i < len(deploy.Spec.Template.Spec.Containers); i++ {
+		deploy.Spec.Template.Spec.Containers[i].Image = "docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative/test:202107131832"
+	}
+
+	containersBytes, err := json.Marshal(&deploy.Spec.Template.Spec.Containers)
 	if err != nil {
 		app.HandleError(w, r, fmt.Errorf("marshall containers: %v", err))
 		return
 	}
 
-	volumesBytes, err := json.Marshal(&pod.Spec.Volumes)
+	secretsBytes, err := json.Marshal(&deploy.Spec.Template.Spec.ImagePullSecrets)
 	if err != nil {
 		app.HandleError(w, r, fmt.Errorf("marshall volumes: %v", err))
 		return
@@ -64,20 +62,15 @@ func (app *App) HandleMutate(w http.ResponseWriter, r *http.Request) {
 
 	// build json patch
 	patch := []JSONPatchEntry{
-		JSONPatchEntry{
-			OP:    "add",
-			Path:  "/metadata/labels/hello-added",
-			Value: []byte(`"OK"`),
-		},
-		JSONPatchEntry{
+		{
 			OP:    "replace",
-			Path:  "/spec/containers",
+			Path:  "/spec/template/spec/containers",
 			Value: containersBytes,
 		},
-		JSONPatchEntry{
+		{
 			OP:    "replace",
-			Path:  "/spec/volumes",
-			Value: volumesBytes,
+			Path:  "/spec/template/spec/imagePullSecrets",
+			Value: secretsBytes,
 		},
 	}
 
@@ -112,4 +105,22 @@ type JSONPatchEntry struct {
 	OP    string          `json:"op"`
 	Path  string          `json:"path"`
 	Value json.RawMessage `json:"value,omitempty"`
+}
+
+func Run(namespace, secretName string) error {
+	var args []string
+	args = append(args, "kubectl create secret docker-registry ", secretName, " ")
+	args = append(args, "--docker-server=docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative ")
+	args = append(args, "--docker-username='mysoft_paas' ")
+	args = append(args, "--docker-password='Mypaas@2020' ")
+	args = append(args, "--namespace=", namespace)
+
+	cmd := strings.Join(args, "")
+
+	out, err := exec.Command("sh", "-c", cmd).CombinedOutput()
+
+	if err != nil {
+		return fmt.Errorf("Failed to run cmd: " + cmd + ", with out: " + string(out) + ", with error: " + err.Error())
+	}
+	return nil
 }
