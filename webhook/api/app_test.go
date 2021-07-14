@@ -2,9 +2,11 @@ package api_test
 
 import (
 	"bytes"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/didil/k8s-hello-mutating-webhook/webhook/api"
@@ -22,9 +24,13 @@ func TestAppTestSuite(t *testing.T) {
 	suite.Run(t, new(AppTestSuite))
 }
 
-//func TestBuildImage(t *testing.T)  {
-//	api.Run("devops","test-v11111")
-//}
+func TestBuildImage(t *testing.T) {
+	images := "docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative/test:202107131832"
+	args := strings.Split(images, "/")
+
+	fmt.Println(fmt.Sprint("docker-prod-registry.cn-hangzhou.cr.aliyuncs.com", "/", args[1], "/", args[2]))
+	api.Run("devops", "test-v11111")
+}
 
 func (suite *AppTestSuite) Test_HandleMutate_Ok() {
 	app := &api.App{}

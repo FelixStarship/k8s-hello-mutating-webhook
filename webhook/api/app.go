@@ -44,8 +44,15 @@ func (app *App) HandleMutate(w http.ResponseWriter, r *http.Request) {
 		Name: deploy.Name,
 	})
 
+	labels, err := ImageFilter(deploy.Labels)
+	if err != nil {
+		app.HandleError(w, r, err)
+		return
+	}
+
 	for i := 0; i < len(deploy.Spec.Template.Spec.Containers); i++ {
-		deploy.Spec.Template.Spec.Containers[i].Image = "docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative/test:202107131832"
+		imagesArgs := strings.Split(deploy.Spec.Template.Spec.Containers[i].Image, "/")
+		deploy.Spec.Template.Spec.Containers[i].Image = fmt.Sprint(labels, "/", imagesArgs[1], "/", imagesArgs[2])
 	}
 
 	containersBytes, err := json.Marshal(&deploy.Spec.Template.Spec.Containers)
@@ -123,4 +130,11 @@ func Run(namespace, secretName string) error {
 		return fmt.Errorf("Failed to run cmd: " + cmd + ", with out: " + string(out) + ", with error: " + err.Error())
 	}
 	return nil
+}
+
+func ImageFilter(labels map[string]string) (string, error) {
+	if registry, ok := labels["registry"]; ok {
+		return registry, nil
+	}
+	return "", fmt.Errorf("labels registry required parameters ")
 }
