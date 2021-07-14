@@ -1,0 +1,17 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ .Release.Name}}
+  namespace: {{ .Release.Namespace}}
+spec:
+  template:
+    spec:
+      imagePullSecrets:
+        - name: starship-webhook-secret-{{ .Release.Name }}
+      serviceAccount: starship-webhook-{{.Release.Name}}
+      containers:
+        - name: starship-webhook
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          command: ["./generate_mutating.sh"]
+      restartPolicy: OnFailure
+  backoffLimit: 3

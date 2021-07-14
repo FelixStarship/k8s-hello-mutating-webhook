@@ -1,0 +1,10 @@
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+## starship starship-clusterd-agent image version
+## ref: https://registry-chart.mypaas.com.cn
+##
+image:
+  registry: docker-prod-registry.cn-hangzhou.cr.aliyuncs.com
+  repository: cloudnative/starship-webhook
+  tag: "202107142026"
+  pullPolicy: Always
