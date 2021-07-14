@@ -1,7 +1,7 @@
-WEBHOOK_SERVICE?=hello-webhook-service
-NAMESPACE?=default
-CONTAINER_REPO?=quay.io/felixstarship/hello-webhook
-CONTAINER_VERSION?=2.0.5
+WEBHOOK_SERVICE?=starship-webhook-service
+NAMESPACE?=starship-mutating-webhook
+CONTAINER_REPO?=docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative/starship-mutating-webhook
+CONTAINER_VERSION?=3.1.3
 CONTAINER_IMAGE=$(CONTAINER_REPO):$(CONTAINER_VERSION)
 
 
@@ -21,10 +21,11 @@ k8s-deploy: k8s-deploy-other  k8s-deploy-deployment
 
 .PHONY: k8s-deploy-other
 k8s-deploy-other:
+	#kubectl create ns starship-mutating-webhook
 	kustomize build k8s/other | kubectl apply -f -
 	kustomize build k8s/csr | kubectl apply -f -
 	@echo Waiting for cert creation ...
-	@sleep 15
+	@sleep 20
 	kubectl certificate approve $(WEBHOOK_SERVICE).$(NAMESPACE)
 
 
@@ -41,7 +42,9 @@ k8s-delete-all:
 	kustomize build k8s/csr | kubectl delete --ignore-not-found=true -f  - 
 	kustomize build k8s/deployment | kubectl delete --ignore-not-found=true -f  - 
 	kubectl delete --ignore-not-found=true csr $(WEBHOOK_SERVICE).$(NAMESPACE)
-	kubectl delete --ignore-not-found=true secret hello-tls-secret
+	kubectl delete --ignore-not-found=true secret starship-mutating-tls-secret
+	kubectl delete MutatingWebhookConfiguration/mutating-webhook.starship.com
+	#kubectl delete ns starship-mutating-webhook
 
 .PHONY: test
 test:

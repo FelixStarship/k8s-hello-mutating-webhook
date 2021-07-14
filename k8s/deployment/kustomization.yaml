@@ -4,5 +4,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: CONTAINER_IMAGE
-  newName: quay.io/felixstarship/hello-webhook
-  newTag: 2.0.5
+  newName: docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative/starship-mutating-webhook
+  newTag: 3.1.3

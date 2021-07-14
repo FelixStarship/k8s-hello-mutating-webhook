@@ -1,27 +1,53 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: starship-mutating-webhook-admin
+  namespace: starship-mutating-webhook
+  labels:
+    starship.mypaas.com.cn/name: starship-mutating-webhook-admin
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: starship-mutating-webhook-admin
+  labels:
+    starship.mypaas.com.cn/name: starship-clusterd-agent
+subjects:
+  - kind: ServiceAccount
+    name: starship-mutating-webhook-admin
+    namespace: starship-mutating-webhook
+roleRef:
+  kind: ClusterRole
+  name: cluster-admin
+  apiGroup: rbac.authorization.k8s.io
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hello-webhook-deployment
+  name: starship-mutating-webhook
   labels:
-    app: hello-webhook
-  namespace: "default"
+    app: starship-mutating-webhook
+  namespace: starship-mutating-webhook
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: hello-webhook
+      app: starship-mutating-webhook
   template:
     metadata:
       labels:
-        app: hello-webhook
+        app: starship-mutating-webhook
     spec:
+      imagePullSecrets:
+        - name: webhook-cert-secret
+      serviceAccount: starship-mutating-webhook-admin
       containers:
-      - name: hello-webhook
+      - name: starship-mutating-webhook
         image: CONTAINER_IMAGE
         ports:
         - containerPort: 8000
         volumeMounts:
-        - name: hello-tls-secret
+        - name: starship-mutating-tls-secret
           mountPath: "/tls"
           readOnly: true        
         resources:
@@ -29,6 +55,6 @@ spec:
             memory: "128Mi"
             cpu: "500m"           
       volumes:
-      - name: hello-tls-secret
+      - name: starship-mutating-tls-secret
         secret:
-          secretName: hello-tls-secret
+          secretName: starship-mutating-tls-secret

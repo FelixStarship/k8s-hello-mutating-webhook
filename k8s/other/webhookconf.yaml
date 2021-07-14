@@ -1,13 +1,13 @@
 apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  name: "hello-webhook.leclouddev.com"
-  namespace: "default"
+  name: mutating-webhook.starship.com
+  namespace: starship-mutating-webhook
 webhooks:
-  - name: "hello-webhook.leclouddev.com"
+  - name: mutating-webhook.starship.com
     objectSelector:
       matchLabels:
-        hello: "true"
+        registry: docker-prod-registry.cn-hangzhou.cr.aliyuncs.com
     rules:
       - apiGroups:   ["apps"]
         apiVersions: ["v1"]
@@ -16,8 +16,8 @@ webhooks:
         scope:       "Namespaced"
     clientConfig:
       service:
-        namespace: "default"
-        name: "hello-webhook-service"
+        namespace: starship-mutating-webhook
+        name: starship-webhook-service
         path: /mutate
     admissionReviewVersions: ["v1", "v1beta1"]
     sideEffects: None

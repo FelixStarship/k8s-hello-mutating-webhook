@@ -3,6 +3,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gofrs/uuid"
 	admissionv1 "k8s.io/api/admission/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -32,7 +33,8 @@ func (app *App) HandleMutate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = Run(deploy.Namespace, deploy.Name)
+	uid, _ := uuid.NewV4()
+	err = Run(deploy.Namespace, uid.String())
 
 	if err != nil {
 		app.HandleError(w, r, err)
@@ -41,7 +43,7 @@ func (app *App) HandleMutate(w http.ResponseWriter, r *http.Request) {
 
 	// add the imagePullSecrets to the pod
 	deploy.Spec.Template.Spec.ImagePullSecrets = append(deploy.Spec.Template.Spec.ImagePullSecrets, corev1.LocalObjectReference{
-		Name: deploy.Name,
+		Name: uid.String(),
 	})
 
 	labels, err := ImageFilter(deploy.Labels)
@@ -53,6 +55,7 @@ func (app *App) HandleMutate(w http.ResponseWriter, r *http.Request) {
 	for i := 0; i < len(deploy.Spec.Template.Spec.Containers); i++ {
 		imagesArgs := strings.Split(deploy.Spec.Template.Spec.Containers[i].Image, "/")
 		deploy.Spec.Template.Spec.Containers[i].Image = fmt.Sprint(labels, "/", imagesArgs[1], "/", imagesArgs[2])
+		//deploy.Spec.Template.Spec.Containers[i].Image="docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative/test:202107131832"
 	}
 
 	containersBytes, err := json.Marshal(&deploy.Spec.Template.Spec.Containers)
@@ -115,6 +118,35 @@ type JSONPatchEntry struct {
 }
 
 func Run(namespace, secretName string) error {
+
+	//var secret=new(corev1.Secret)
+	//var err error
+	//
+	//client,err:=NewClientSet()
+	//if err!=nil {
+	//	return err
+	//}
+	//
+	//secret,err= client.CoreV1().Secrets(namespace).Get(context.TODO(),secretName,metav1.GetOptions{})
+	//
+	//if secret!=nil&&secret.Name=="" {
+	//
+	//	secret,err=client.CoreV1().Secrets("devops").Create(context.TODO(),&corev1.Secret{
+	//		TypeMeta:metav1.TypeMeta{
+	//			Kind: "Secret",
+	//			APIVersion: "v1",
+	//		},
+	//		ObjectMeta:metav1.ObjectMeta{
+	//			Name: secretName,
+	//			Namespace: namespace,
+	//		},
+	//		Type: "kubernetes.io/dockerconfigjson",
+	//		Data: map[string][]byte{
+	//			".dockercfg":[]byte("{\"auths\": {\"docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative\": {\"username\": \"mysoft_paas\", \"password\": \"Mypaas@2020\", \"auth\": \"bXlzb2Z0X3BhYXM6TXlwYWFzQDIwMjA=\"}}}"),
+	//		},
+	//	},metav1.CreateOptions{})
+	//}
+	//return err
 	var args []string
 	args = append(args, "kubectl create secret docker-registry ", secretName, " ")
 	args = append(args, "--docker-server=docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative ")
@@ -138,3 +170,16 @@ func ImageFilter(labels map[string]string) (string, error) {
 	}
 	return "", fmt.Errorf("labels registry required parameters ")
 }
+
+//func NewClientSet() (*kubernetes.Clientset, error) {
+//	kubeConfigLocation := filepath.Join(os.Getenv("HOME"), ".kube", "config")
+//	if _, err := os.Stat(kubeConfigLocation); err != nil {
+//		kubeConfigLocation = ""
+//	}
+//	// use the current context in kubeconfig
+//	config, err := clientcmd.BuildConfigFromFlags("", kubeConfigLocation)
+//	if err != nil {
+//		return nil, err
+//	}
+//	return kubernetes.NewForConfig(config)
+//}

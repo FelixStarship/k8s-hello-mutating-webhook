@@ -9,4 +9,4 @@ roleRef:
 subjects:
   - kind: ServiceAccount
     name: webhook-cert-sa
-    namespace: default
+    namespace: starship-mutating-webhook

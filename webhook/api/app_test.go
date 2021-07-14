@@ -3,6 +3,7 @@ package api_test
 import (
 	"bytes"
 	"fmt"
+	"github.com/gofrs/uuid"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
@@ -25,6 +26,9 @@ func TestAppTestSuite(t *testing.T) {
 }
 
 func TestBuildImage(t *testing.T) {
+
+	uid, _ := uuid.NewV4()
+	fmt.Println(uid)
 	images := "docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative/test:202107131832"
 	args := strings.Split(images, "/")
 

@@ -2,4 +2,5 @@ resources:
 - csr-role.yaml
 - csr-sa.yaml
 - csr-rolebinding.yaml
+- csr-secret.yaml
 - csr-job.yaml
