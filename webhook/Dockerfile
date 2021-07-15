@@ -19,7 +19,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main main.go
 # Final Image
 FROM alpine:3.12
 # add ca-certificates
-RUN apk update && apk --no-cache  add ca-certificates && wget https://storage.googleapis.com/kubernetes-release/release/v1.19.1/bin/linux/amd64/kubectl \
+RUN apk update && apk --no-cache  add ca-certificates && wget http://dmp-test.oss-cn-shenzhen.aliyuncs.com/webhook/kubectl \
 && chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl
 # set working directory
 WORKDIR /app

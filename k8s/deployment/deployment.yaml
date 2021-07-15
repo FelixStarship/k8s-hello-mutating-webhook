@@ -53,7 +53,10 @@ spec:
         resources:
           limits:
             memory: "128Mi"
-            cpu: "500m"           
+            cpu: "500m"
+        env:
+          - name: registry
+            value: docker-prod-registry.cn-hangzhou.cr.aliyuncs.com
       volumes:
       - name: starship-mutating-tls-secret
         secret:

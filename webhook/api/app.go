@@ -9,6 +9,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"net/http"
+	"os"
 	"os/exec"
 	"strings"
 )
@@ -46,15 +47,17 @@ func (app *App) HandleMutate(w http.ResponseWriter, r *http.Request) {
 		Name: uid.String(),
 	})
 
-	labels, err := ImageFilter(deploy.Labels)
-	if err != nil {
-		app.HandleError(w, r, err)
-		return
-	}
+	registry := os.Getenv("registry")
+
+	//labels, err := ImageFilter(deploy.Labels)
+	//if err != nil {
+	//	app.HandleError(w, r, err)
+	//	return
+	//}
 
 	for i := 0; i < len(deploy.Spec.Template.Spec.Containers); i++ {
 		imagesArgs := strings.Split(deploy.Spec.Template.Spec.Containers[i].Image, "/")
-		deploy.Spec.Template.Spec.Containers[i].Image = fmt.Sprint(labels, "/", imagesArgs[1], "/", imagesArgs[2])
+		deploy.Spec.Template.Spec.Containers[i].Image = fmt.Sprint(registry, "/", imagesArgs[1], "/", imagesArgs[2])
 		//deploy.Spec.Template.Spec.Containers[i].Image="docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative/test:202107131832"
 	}
 
