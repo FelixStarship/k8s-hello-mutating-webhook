@@ -1,7 +1,7 @@
 WEBHOOK_SERVICE?=starship-webhook-service
 NAMESPACE?=starship-mutating-webhook
 CONTAINER_REPO?=docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative/starship-mutating-webhook
-CONTAINER_VERSION?=3.1.7
+CONTAINER_VERSION?=3.1.8
 CONTAINER_IMAGE=$(CONTAINER_REPO):$(CONTAINER_VERSION)
 
 

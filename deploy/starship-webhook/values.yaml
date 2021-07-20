@@ -6,5 +6,5 @@
 image:
   registry: docker-prod-registry.cn-hangzhou.cr.aliyuncs.com
   repository: cloudnative/starship-webhook
-  tag: "202107142026"
+  tag: "202107201606"
   pullPolicy: Always
