@@ -3,11 +3,9 @@ package api_test
 import (
 	"bytes"
 	"fmt"
-	"github.com/gofrs/uuid"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"github.com/didil/k8s-hello-mutating-webhook/webhook/api"
@@ -27,13 +25,15 @@ func TestAppTestSuite(t *testing.T) {
 
 func TestBuildImage(t *testing.T) {
 
-	uid, _ := uuid.NewV4()
-	fmt.Println(uid)
-	images := "docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative/test:202107131832"
-	args := strings.Split(images, "/")
-
-	fmt.Println(fmt.Sprint("docker-prod-registry.cn-hangzhou.cr.aliyuncs.com", "/", args[1], "/", args[2]))
-	api.Run("devops", "test-v11111")
+	//uid, _ := uuid.NewV4()
+	//fmt.Println(uid)
+	//images := "docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative/test:202107131832"
+	images := "selenium/hub:3.141.59"
+	//args := strings.Split(images, "/")
+	//
+	//fmt.Println(fmt.Sprint("docker-prod-registry.cn-hangzhou.cr.aliyuncs.com", "/", args[1], "/", args[2]))
+	//api.Run("devops", "test-v11111")
+	fmt.Println(api.GenerateImageUrl(images))
 }
 
 func (suite *AppTestSuite) Test_HandleMutate_Ok() {

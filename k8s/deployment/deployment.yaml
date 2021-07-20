@@ -56,7 +56,7 @@ spec:
             cpu: "500m"
         env:
           - name: registry
-            value: docker-prod-registry.cn-hangzhou.cr.aliyuncs.com
+            value: docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative
       volumes:
       - name: starship-mutating-tls-secret
         secret:
