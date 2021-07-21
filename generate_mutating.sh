@@ -13,7 +13,7 @@ kubectl certificate approve starship-webhook-service.starship-mutating-webhook
 
 
 (cd /app/k8s/deployment && \
-	kustomize edit set image CONTAINER_IMAGE=docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative/starship-mutating-webhook:3.1.8)
+	kustomize edit set image CONTAINER_IMAGE=docker-prod-registry.cn-hangzhou.cr.aliyuncs.com/cloudnative/starship-mutating-webhook:3.1.9)
 	kustomize build /app/k8s/deployment | kubectl apply -f -
 
 

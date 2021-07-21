@@ -194,8 +194,8 @@ func GetMd5Prefix(str string) string {
 // repository:tag :imageUrl原来的repository。如果长度超过55，那么将会修改repository:tag。修改规则为 “：左边取34个字符，右边取20个字符”
 func GenerateImageUrl(imageUrl string) string {
 
-	var registry string
-	var namespace string
+	var registry = "registry.hub.docker.com"
+	var namespace = "library"
 	var repositoryAndTag string
 
 	if imageUrl == "" {
